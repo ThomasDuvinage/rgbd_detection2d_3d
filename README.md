@@ -24,6 +24,12 @@ catkin_make
 ```sh
 rosrun rgbd_detection2d_3d rgbd_detection2d_3d
 ```
+* Realsense usage
+In case you're working with a realsense camera you should add the following parameters to the roslaunch command :
+
+```
+roslaunch realsense2_camera rs_camera.launch filters:=pointcloud initial_reset:=true ordered_pc:=true
+```
 
 ## Test environment ##
 ```
