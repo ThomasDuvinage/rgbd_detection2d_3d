@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rgbd_detection2d_3d)
 
-find_package(catkin REQUIRED COMPONENTS roscpp message_filters sensor_msgs darknet_ros_msgs vision_msgs visualization_msgs pcl_conversions)
+find_package(catkin REQUIRED COMPONENTS roscpp tf2 tf2_ros message_filters sensor_msgs darknet_ros_msgs vision_msgs visualization_msgs pcl_conversions)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 

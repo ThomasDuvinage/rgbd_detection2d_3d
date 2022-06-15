@@ -1,0 +1,7 @@
+<launch>
+    <arg name="camera_frame" value="/camera_depth_frame">
+
+    <node name="lane_following_node" pkg="turtlebot3_lane_following" type="lane_following_node" output="screen">
+        <param name="camera_frame_id" value="$(arg camera_frame)"/>
+    </node>
+</launch>

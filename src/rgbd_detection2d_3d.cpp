@@ -22,12 +22,17 @@
 #include <darknet_ros_msgs/BoundingBoxes.h>
 #include <vision_msgs/Detection3DArray.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
 // PCL
 #include <pcl_conversions/pcl_conversions.h>
 
 ros::Publisher detection3d_array_pub_;
 ros::Publisher marker_array_pub_;
 float x_thereshold_, y_thereshold_, z_thereshold_;
+
+std::string camera_frame_id;
+std::string object_frame_id;
 
 void callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &detect_2d, const sensor_msgs::PointCloud2::ConstPtr &depth_points)
 {
@@ -102,6 +107,27 @@ void callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &detect_2d, const 
     detection3d.bbox.size.z = fabs(z_max - z_min);
     // TODO: detection3d.source_cloud here if needed.
     detection3d_array.detections.push_back(detection3d);
+
+    // Broadcast tf2
+
+    object_frame_id = "/rgbd_detection/object" + i;
+
+    static tf2_ros::TransformBroadcaster br;
+    geometry_msgs::TransformStamped static_transformStamped;
+
+    static_transformStamped.header.stamp = ros::Time::now();
+    static_transformStamped.header.frame_id = camera_frame_id;
+    static_transformStamped.child_frame_id = object_frame_id;
+    static_transformStamped.transform.translation.x = center_point.x;
+    static_transformStamped.transform.translation.y = center_point.y;
+    static_transformStamped.transform.translation.z = center_point.z;
+    tf2::Quaternion quat;
+    quat.setRPY(0, 0, 0);
+    static_transformStamped.transform.rotation.x = quat.x();
+    static_transformStamped.transform.rotation.y = quat.y();
+    static_transformStamped.transform.rotation.z = quat.z();
+    static_transformStamped.transform.rotation.w = quat.w();
+    br.sendTransform(static_transformStamped);
 
     visualization_msgs::Marker marker;
     marker.header = depth_points->header;
@@ -215,10 +241,13 @@ void callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &detect_2d, const 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "rgbd_detection2d_3d");
+  ros::NodeHandle nh;
+
+  nh.getParam("camera_frame_id", camera_frame_id);
 
   /*** Subscribers ***/
-  ros::NodeHandle nh;
-  message_filters::Subscriber<darknet_ros_msgs::BoundingBoxes> detection_2d(nh, "/darknet_ros/bounding_boxes", 1);
+  message_filters::Subscriber<darknet_ros_msgs::BoundingBoxes>
+      detection_2d(nh, "/darknet_ros/bounding_boxes", 1);
   message_filters::Subscriber<sensor_msgs::PointCloud2> depth_registered_points(nh, "/camera/depth/color/points", 1);
   typedef message_filters::sync_policies::ApproximateTime<darknet_ros_msgs::BoundingBoxes, sensor_msgs::PointCloud2> ApproximateTimePolicy;
   message_filters::Synchronizer<ApproximateTimePolicy> sync(ApproximateTimePolicy(10), detection_2d, depth_registered_points);
