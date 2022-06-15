@@ -31,6 +31,12 @@ In case you're working with a realsense camera you should add the following para
 roslaunch realsense2_camera rs_camera.launch filters:=pointcloud initial_reset:=true ordered_pc:=true
 ```
 
+'''
+roslaunch rgbd_detection2d_3d rgbd_detection2d_3d.launch 
+'''
+
+You can modify parent frame by adding a parameter.
+
 ## Test environment ##
 ```
 Ubuntu 20.04 LTS
